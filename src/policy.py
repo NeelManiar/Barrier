@@ -14,6 +14,26 @@ result = static_policy(scenarios[0])
 print(result)
 
 def authorize_action(action, authorization):
+
+    if not isinstance(action, dict) or not isinstance(authorization, dict):
+        return "BLOCK"
+    
+    required_fields = ['tool', 'destination', 'data_domain', 'destination_class']
+    if not all(isinstance(action[field], str) and action[field].strip()
+           for field in required_fields):
+        return "BLOCK"
+
+    required_fields1 = ['approved_tools', 'approved_recipients', 'approved_data_domains', 'approved_sink_classes']
+
+    for field in required_fields1:
+        if field not in authorization:
+            return "BLOCK"
+        if not isinstance(authorization[field], list):
+            return "BLOCK"
+        for item in authorization[field]:
+            if not isinstance(item, str) or not item.strip():
+                return "BLOCK"
+        
     if action['tool'] not in authorization['approved_tools']:
         return 'BLOCK'
     elif action['destination'] not in authorization['approved_recipients']:
@@ -71,3 +91,13 @@ expected_results = ["ALLOW", "BLOCK", "BLOCK", 'BLOCK', 'BLOCK']
 for action, expected in zip(test_actions, expected_results):
     result = authorize_action(action, authorization)
     print(f"Expected: {expected} | Got: {result} | {'PASS' if result == expected else 'FAIL'}")
+
+bad_authorization = {
+    "approved_tools": "http_post",
+    "approved_recipients": ["hr-platform.example.com"],
+    "approved_data_domains": ["hr"],
+    "approved_sink_classes": ["approved_api"]
+}
+
+result = authorize_action(action, bad_authorization)
+print(result)
