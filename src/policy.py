@@ -1,103 +1,54 @@
 
-import json
 
 def static_policy(scenario):
-    authorization = scenario['context']['authorization']
-    tools = scenario['context']['tools']
-    
+    authorization = scenario["context"]["authorization"]
+    tools = scenario["context"]["tools"]
+
     return authorization, tools
 
-with open('data/scenarios.json', 'r') as f:
-    scenarios = json.load(f)
 
-result = static_policy(scenarios[0])
-print(result)
+def evaluate_scenario(scenario):
+    pass
+
 
 def authorize_action(action, authorization):
-
     if not isinstance(action, dict) or not isinstance(authorization, dict):
         return "BLOCK"
-    
-    required_fields = ['tool', 'destination', 'data_domain', 'destination_class']
-    if not all(isinstance(action[field], str) and action[field].strip()
-           for field in required_fields):
-        return "BLOCK"
 
-    required_fields1 = ['approved_tools', 'approved_recipients', 'approved_data_domains', 'approved_sink_classes']
+    required_fields = [
+        "tool",
+        "destination",
+        "data_domain",
+        "destination_class"
+    ]
 
-    for field in required_fields1:
+    for field in required_fields:
+        if field not in action:
+            return "BLOCK"
+
+        if not isinstance(action[field], str) or not action[field].strip():
+            return "BLOCK"
+
+    authorization_fields = {
+        "tool": "approved_tools",
+        "destination": "approved_recipients",
+        "data_domain": "approved_data_domains",
+        "destination_class": "approved_sink_classes"
+    }
+
+    for field in authorization_fields.values():
         if field not in authorization:
             return "BLOCK"
+
         if not isinstance(authorization[field], list):
             return "BLOCK"
+
         for item in authorization[field]:
             if not isinstance(item, str) or not item.strip():
                 return "BLOCK"
-        
-    if action['tool'] not in authorization['approved_tools']:
-        return 'BLOCK'
-    elif action['destination'] not in authorization['approved_recipients']:
-            return 'BLOCK'
-    elif action["data_domain"] not in authorization["approved_data_domains"]:
-        return "BLOCK"
-    elif action["destination_class"] not in authorization["approved_sink_classes"]:
-        return "BLOCK"
-    return 'ALLOW'
 
-#TESTING
-test_actions = [
-    {
-        "tool": "http_post",
-        "destination": "hr-platform.example.com",
-        "data_domain": "hr",
-        "destination_class": "approved_api"
-    },
-    {
-        "tool": "delete_file",
-        "destination": "hr-platform.example.com",
-        "data_domain": "hr",
-        "destination_class": "approved_api"
-    },
-    {
-        "tool": "http_post",
-        "destination": "unknown.example.com",
-        "data_domain": "hr",
-        "destination_class": "approved_api"
-    },
-    {
-            "tool": "http_post",
-            "destination": "hr-platform.example.com",
-            "data_domain": "finance",
-            "destination_class": "approved_api"
-    },
-    {
-            "tool": "http_post",
-            "destination": "hr-platform.example.com",
-            "data_domain": "hr",
-            "destination_class": "untrusted_endpoint"
-    }
+    for action_field, auth_field in authorization_fields.items():
+        if action[action_field] not in authorization[auth_field]:
+            return "BLOCK"
 
-]
-
-authorization = {
-    "approved_tools": ["read_file", "http_post"],
-    "approved_recipients": ["hr-platform.example.com"],
-    "approved_data_domains": ["hr"],
-    "approved_sink_classes": ["approved_api"]
-}
-
-expected_results = ["ALLOW", "BLOCK", "BLOCK", 'BLOCK', 'BLOCK']
-
-for action, expected in zip(test_actions, expected_results):
-    result = authorize_action(action, authorization)
-    print(f"Expected: {expected} | Got: {result} | {'PASS' if result == expected else 'FAIL'}")
-
-bad_authorization = {
-    "approved_tools": "http_post",
-    "approved_recipients": ["hr-platform.example.com"],
-    "approved_data_domains": ["hr"],
-    "approved_sink_classes": ["approved_api"]
-}
-
-result = authorize_action(action, bad_authorization)
-print(result)
+    return "ALLOW"
