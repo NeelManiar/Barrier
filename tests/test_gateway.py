@@ -33,10 +33,12 @@ def test_authorized_action_executes():
     tools = {"http_post": tool}
 
     action = {
-        "tool": "http_post",
+    "tool": "http_post",
+    "arguments": {
         "destination": "hr-platform.example.com",
         "data_domain": "hr",
         "destination_class": "approved_api"
+        }
     }
 
     authorization = {
@@ -49,7 +51,11 @@ def test_authorized_action_executes():
     result = execute_action(action, authorization, tools)
 
     assert result == "Request completed"
-    tool.assert_called_once_with()
+    tool.assert_called_once_with(
+    destination="hr-platform.example.com",
+    data_domain="hr",
+    destination_class="approved_api"
+)
 
 
 def test_unknown_tool_is_blocked():
@@ -65,6 +71,32 @@ def test_unknown_tool_is_blocked():
 
     authorization = {
         "approved_tools": ["delete_file"],
+        "approved_recipients": ["hr-platform.example.com"],
+        "approved_data_domains": ["hr"],
+        "approved_sink_classes": ["approved_api"]
+    }
+
+    result = execute_action(action, authorization, tools)
+
+    assert result == "BLOCKED"
+    tool.assert_not_called()
+
+
+def test_unapproved_argument_never_executes():
+    tool = Mock()
+    tools = {"http_post": tool}
+
+    action = {
+        "tool": "http_post",
+        "arguments": {
+            "destination": "evil.example.com",
+            "data_domain": "hr",
+            "destination_class": "approved_api"
+        }
+    }
+
+    authorization = {
+        "approved_tools": ["http_post"],
         "approved_recipients": ["hr-platform.example.com"],
         "approved_data_domains": ["hr"],
         "approved_sink_classes": ["approved_api"]
