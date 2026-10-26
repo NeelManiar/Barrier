@@ -1,11 +1,13 @@
-# Barrier
+# Barrier 🛡️
 ### Context-Aware Authorization for AI Agents
 
-Barrier is a research prototype exploring a simple question: **How do we control what an AI agent is allowed to do, even when the model proposes an unsafe action?**
+Barrier is a research prototype exploring how to control what an AI agent is allowed to do, even when its model proposes an unsafe action.
 
-Rather than relying on an LLM to decide whether its own actions are safe, Barrier places a deterministic authorization gateway between the agent and its tools. The gateway evaluates each proposed action against an explicit policy before allowing execution.
+Instead of trusting an LLM to authorize its own actions, Barrier places a deterministic authorization gateway between the agent and its tools. Every proposed action is checked against an explicit policy before execution.
 
-## How it works
+---
+
+## How It Works
 
 ```text
 User Request
@@ -24,123 +26,127 @@ Authorization Policy
      +---- BLOCK ----> Reject action
 ```
 
-The model interprets the request and proposes an action. Barrier independently checks whether the action is authorized.
+**Core principle:** An AI model can propose an action, but the authorization layer decides whether it is allowed.
 
-## Current implementation
+---
 
-Barrier is being developed incrementally, with each version adding a distinct capability.
+## Development Progress
 
-### v0.1 — Dataset foundation
+| Version | Milestone | Status |
+|---|---|---|
+| v0.1 | Dataset preparation and normalization | ☑ Complete |
+| v0.2 | Static authorization policy, gateway and tests | ☑ Complete |
+| v0.3 | LLM-connected agent and authorization enforcement | ☑ Complete |
+
+### v0.1 — Dataset Foundation
 - Prepared scenarios from CrossMCP-Bench.
-- Built a dataset preparation pipeline to normalize scenarios for experimentation.
+- Built a dataset preparation pipeline.
+- Normalized scenarios for further experimentation.
 
-### v0.2 — Static authorization gateway
+### v0.2 — Static Authorization Gateway
 - Implemented deterministic authorization checks.
-- Validated authorization inputs and required action fields.
-- Added a gateway that checks proposed actions before tool execution.
-- Added automated tests for authorization decisions and blocked execution.
+- Validated required action and authorization fields.
+- Built a gateway to check actions before execution.
+- Added automated authorization tests.
+- Tested that unauthorized actions do not execute.
 
-### v0.3 — LLM-connected agent
-- Integrated a Gemini model to propose structured tool calls.
+### v0.3 — LLM-Connected Agent
+- Integrated Gemini to propose structured tool calls.
 - Routed model-proposed actions through the Barrier gateway.
 - Implemented a simulated report-sending tool.
-- Verified that an approved destination could execute successfully.
-- Verified that a request targeting an unapproved destination was blocked.
-- Ran the project test suite successfully.
+- Verified successful execution for an approved destination.
+- Verified blocking of an unapproved destination.
+- Passed the project test suite.
+
+---
 
 ## Example
 
-The current prototype uses a simulated HR-reporting workflow.
+The current prototype demonstrates authorization using a simulated HR-reporting workflow.
 
-**Approved destination**
+**Approved destination:** `hr-platform.example.com`
 
-`hr-platform.example.com`
+The destination matches the configured allowlist, so the action passes authorization and the simulated tool executes.
 
-The destination is present in the configured authorization policy, so the action can proceed when the other required fields are also approved.
+**Unapproved destination:** `evil@example.com`
 
-**Unapproved destination**
+The LLM proposes the action, but Barrier rejects it because the destination is not approved. The tool does not execute.
 
-`evil@example.com`
+No real HR report is sent and no external destination is contacted.
 
-The action is rejected because the destination does not match the configured allowlist.
+---
 
-The tool is simulated: no real HR report is sent and no external destination is contacted.
-
-## Getting started
+## Getting Started
 
 ### Requirements
 - Python
 - `pytest`
-- Google Gen AI SDK for the LLM-connected demonstration
+- Google Gen AI SDK
 - A Gemini API key for live model calls
 
-Install the required packages:
+### 1. Install dependencies
 
 ```bash
 python -m pip install pytest google-genai
 ```
 
-Set your API key as the `GEMINI_API_KEY` environment variable. Do not hardcode or commit API keys.
+### 2. Configure the API key
 
-### Run the deterministic demo
+Set your API key as the `GEMINI_API_KEY` environment variable. Keep it private and never commit it to GitHub.
 
-From the project root:
+### 3. Run the deterministic demo
 
 ```bash
 python -m src.agent_demo
 ```
 
-### Run the LLM-connected demo
+### 4. Run the LLM-connected agent
 
 ```bash
 python -m src.llm_agent
 ```
 
-This requires a valid API key, an available model, and working API access.
+This requires valid API credentials, an available Gemini model, and working API access.
 
-### Run the project tests
+### 5. Run the project tests
 
 ```bash
 python -m pytest -v tests/
 ```
 
-## Design principles
+---
 
-**1. Separate proposal from authorization**
+## Design Principles
 
-An LLM proposing an action does not automatically make that action permissible.
+- **Separation of proposal and authorization:** An LLM proposing an action does not automatically authorize it.
+- **Argument-level checks:** The gateway checks the tool and relevant arguments that will actually be passed for execution.
+- **Fail-closed validation:** Malformed actions, missing required fields, and values outside configured allowlists are rejected.
+- **Testable decisions:** Authorization logic can be tested independently of the language model.
 
-**2. Check the action that will actually execute**
-
-Authorization decisions must be based on the tool and relevant arguments passed to the gateway, rather than trusting the model's description of its intended action.
-
-**3. Default to blocking invalid actions**
-
-Malformed actions, missing authorization fields, and values outside the configured allowlists should not proceed.
-
-**4. Make behaviour testable**
-
-Authorization logic is deterministic and can be tested independently of the language model.
+---
 
 ## Limitations
 
 Barrier is an early-stage research prototype, not a production-ready security product.
 
 - The current workflow uses a simulated tool rather than a real enterprise integration.
-- Authorization depends on explicitly configured policy fields and allowlists.
-- The current implementation does not establish comprehensive protection against prompt injection, compromised tools, or every form of malicious action.
-- Passing tests demonstrates the behaviour covered by those tests, not complete security.
-- The prototype has not yet been comprehensively evaluated against the full CrossMCP-Bench dataset.
+- Authorization relies on explicitly configured policy fields and allowlists.
+- Comprehensive protection against prompt injection, compromised tools, and all forms of malicious actions has not been established.
+- The prototype has not yet been comprehensively evaluated across the full CrossMCP-Bench dataset.
 
 ## Roadmap
 
-- Expand the range of realistic toy-agent workflows.
-- Evaluate authorization decisions across a broader set of benchmark scenarios.
-- Explore more context-sensitive policies, including action risk and data sensitivity.
-- Investigate integration patterns for real agent frameworks and tool interfaces.
+- [ ] Expand realistic toy-agent workflows.
+- [ ] Evaluate authorization decisions across a broader set of benchmark scenarios.
+- [ ] Explore context-sensitive policies based on action risk and data sensitivity.
+- [ ] Investigate integration with real agent frameworks and tool interfaces.
 
-## Project status
+---
+
+## Project Status
 
 Barrier is an evolving engineering and research project focused on making AI-agent authorization explicit, testable, and independent of the model's own decisions.
 
-The goal is to build and evaluate the security layer incrementally rather than claim a complete solution prematurely.
+Each version builds on the previous one: from preparing benchmark data, to implementing deterministic authorization, to connecting a language model to the gateway.
+
+The goal is to build and evaluate the security layer incrementally—not to claim a complete solution prematurely.
