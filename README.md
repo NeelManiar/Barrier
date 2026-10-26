@@ -1,4 +1,4 @@
-# Barrier 🛡️
+# Barrier
 ### Context-Aware Authorization for AI Agents
 
 Barrier is a research prototype exploring how to control what an AI agent is allowed to do, even when its model proposes an unsafe action.
