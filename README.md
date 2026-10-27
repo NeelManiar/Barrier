@@ -125,16 +125,6 @@ python -m pytest -v tests/
 
 ---
 
-## Limitations
-
-Barrier is an early-stage research prototype, not a production-ready security product.
-
-- The current workflow uses a simulated tool rather than a real enterprise integration.
-- Authorization relies on explicitly configured policy fields and allowlists.
-- Comprehensive protection against prompt injection, compromised tools, and all forms of malicious actions has not been established.
-- The prototype has not yet been comprehensively evaluated across the full CrossMCP-Bench dataset.
-
-
 ### Current Focus
 
 Barrier is an experimental authorization layer for AI agents. It intercepts proposed tool calls and checks them against explicit permissions before allowing execution.
@@ -156,8 +146,6 @@ Planned work:
 - Measure false positives and false negatives.
 - Document limitations and test results.
 
-**Scope and limitations:** Barrier is a research prototype, not a production-ready security product. Content-aware authorization is planned work and is not yet implemented.
-
 ## Roadmap
 
 - [ ] Expand realistic toy-agent workflows.
@@ -165,6 +153,15 @@ Planned work:
 - [ ] Explore context-sensitive policies based on action risk and data sensitivity.
 - [ ] Investigate integration with real agent frameworks and tool interfaces.
 
+
+## Limitations
+
+Barrier is an early-stage research prototype, not a production-ready security product.
+
+- The current workflow uses a simulated tool rather than a real enterprise integration.
+- Authorization relies on explicitly configured policy fields and allowlists.
+- Comprehensive protection against prompt injection, compromised tools, and all forms of malicious actions has not been established.
+- The prototype has not yet been comprehensively evaluated across the full CrossMCP-Bench dataset.
 ---
 
 ## Project Status
