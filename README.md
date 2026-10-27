@@ -134,6 +134,30 @@ Barrier is an early-stage research prototype, not a production-ready security pr
 - Comprehensive protection against prompt injection, compromised tools, and all forms of malicious actions has not been established.
 - The prototype has not yet been comprehensively evaluated across the full CrossMCP-Bench dataset.
 
+
+### Current Focus
+
+Barrier is an experimental authorization layer for AI agents. It intercepts proposed tool calls and checks them against explicit permissions before allowing execution.
+
+**Current capability (v0.3):**
+- Accepts tool-call proposals from an LLM.
+- Validates action structure and checks tool, destination, data domain, and destination class against configured allowlists.
+- Blocks unauthorized actions before the registered tool executes.
+- Demonstrates the flow using a simulated report-sending tool.
+
+**Planned research direction (v0.4): Content-Aware Authorization**
+
+The current policy evaluates action metadata; it does not inspect report contents. The next research stage will investigate whether payload inspection can prevent sensitive or prohibited information from being transferred to an otherwise approved destination.
+
+Planned work:
+- Define explicit content-handling policies.
+- Build labelled test cases for permitted and prohibited payloads.
+- Evaluate content inspection approaches.
+- Measure false positives and false negatives.
+- Document limitations and test results.
+
+**Scope and limitations:** Barrier is a research prototype, not a production-ready security product. Content-aware authorization is planned work and is not yet implemented.
+
 ## Roadmap
 
 - [ ] Expand realistic toy-agent workflows.
