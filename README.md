@@ -5,6 +5,8 @@ Barrier is a research prototype exploring how to control what an AI agent is all
 
 Instead of trusting an LLM to authorize its own actions, Barrier places a deterministic authorization gateway between the agent and its tools. Every proposed action is checked against an explicit policy before execution.
 
+To actually test it IRL, go to https://barrierlabs.streamlit.app/ (still building and improving)
+
 ---
 
 ## How It Works
